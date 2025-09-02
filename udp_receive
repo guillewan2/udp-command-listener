@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# Guillermo Torres
+# Date: mar 02 sep 2025
+# Time: 17:05
+# Description: 'Prepares the system to receive messages via UDP and execute commands through them'
+# Distribution: Ubuntu 24.04.3 LTS
+
+
+# Import 'ucl.conf' variables
+source ucl.conf
+
+# Check if --prepare is selected
+if [[ $1 == "--prepare" ]]; then
+    echo "Installing netcat..."
+    sudo apt install netcat -y
+fi
+
+
+
+#  Check if socat is installed 
+if ! command -v netcat >/dev/null 2>&1; then
+    echo "netcat is not found, please install it with --prepare"
+    exit 1
+fi
+
+# Check secret key on message
+get_key(){
+    if [[ "$SECRET" = "" ]]; then
+        msg_secret=""
+        msg_nosecret=$*
+    else
+        msg_secret="$1"
+        shift
+        msg_nosecret="$*"
+    fi
+}
+
+# N E T C A T 
+while true; do
+    message=$(timeout 2 nc -u -l $PORT)
+        if [[ $message = "" ]]; then
+            echo "Nothing received"
+        else
+            get_key $message
+            # Check if msg_secret equals to the secret on ucl.conf
+            if [[ "$msg_secret" = "$SECRET" ]]; then
+                echo "-----------------------"
+                echo "-     UDP COMMAND       "
+                echo "-----------------------"
+                echo "- $msg_nosecret "
+                echo "-----------------------"
+                $($msg_nosecret)
+            # Log file
+            echo "$msg_nosecret with key '$msg_secret' on $(date +"%d/%m/%y") >> commands.log
+            fi
+        fi
+done
+
