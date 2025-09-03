@@ -18,7 +18,7 @@ fi
 
 
 
-#  Check if socat is installed 
+#  Check if necat is installed 
 if ! command -v netcat >/dev/null 2>&1; then
     echo "netcat is not found, please install it with --prepare"
     exit 1
@@ -36,6 +36,19 @@ get_key(){
     fi
 }
 
+check_bannedcommand(){
+    if [[ "$banned_commands_ON" == "true" ]]; then
+    for i in "${banned_commands[@]}"; do
+        for arg in "$@"; do
+            if [[ "$i" == "$arg" ]]; then
+                echo "Banned command used, not executing"
+                return 1
+            fi
+        done
+    done
+    fi            
+}
+
 # N E T C A T 
 while true; do
     message=$(timeout 2 nc -u -l $PORT)
@@ -45,14 +58,20 @@ while true; do
             get_key $message
             # Check if msg_secret equals to the secret on ucl.conf
             if [[ "$msg_secret" = "$SECRET" ]]; then
-                echo "-----------------------"
-                echo "-     UDP COMMAND       "
-                echo "-----------------------"
-                echo "- $msg_nosecret "
-                echo "-----------------------"
-                $($msg_nosecret)
-            # Log file
-            echo "$msg_nosecret with key '$msg_secret' on $(date +"%d/%m/%y") >> commands.log
+                check_bannedcommand $msg_nosecret
+                if [[ $? -eq 1 ]]; then
+                    echo
+                else
+                    echo "-----------------------"
+                    echo "-     UDP COMMAND       "
+                    echo "-----------------------"
+                    echo "- $msg_nosecret "
+                    echo "-----------------------"
+                    echo "$msg_nosecret with key '$msg_secret' on $(date +'%d/%m/%y')" >> commands.log
+                    $($msg_nosecret | tee -a commands.log)
+                    echo "---------------------" >> commands.log
+                fi
+            
             fi
         fi
 done
