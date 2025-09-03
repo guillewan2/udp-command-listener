@@ -7,8 +7,12 @@
 # Distribution: Ubuntu 24.04.3 LTS
 
 
-# Import 'ucl.conf' variables
+# Import 'ucl.conf' variables and check for errors
 source ucl.conf
+if [[ "$banned_commands_ON" == "$whitelisted_commands_ON" && "$whitelisted_commands_ON" == "true" ]]; then
+    echo "You can't use the backlist and the whitelist at the same time!!!"
+    exit 1
+fi
 
 # Check if --prepare is selected
 if [[ $1 == "--prepare" ]]; then
@@ -36,18 +40,35 @@ get_key(){
     fi
 }
 
+# Check the banned commands if enabled
 check_bannedcommand(){
     if [[ "$banned_commands_ON" == "true" ]]; then
-    for i in "${banned_commands[@]}"; do
+        for i in "${banned_commands[@]}"; do
+            for arg in "$@"; do
+                if [[ "$i" == "$arg" ]]; then
+                    echo "Banned command used, not executing"
+                    return 1
+                fi
+            done
+        done
+    elif [[ "$whitelisted_commands_ON" == "true" ]]; then
         for arg in "$@"; do
-            if [[ "$i" == "$arg" ]]; then
+            allowed=false
+            for i in "${whitelisted_commands[@]}"; do
+                if [[ "$i" == "$arg" ]]; then
+                    allowed=true
+                    break
+                fi
+            done
+            if [[ "$allowed" == "false" ]]; then
                 echo "Banned command used, not executing"
                 return 1
             fi
         done
-    done
+        return 0
     fi            
 }
+
 
 # N E T C A T 
 while true; do
@@ -68,7 +89,7 @@ while true; do
                     echo "- $msg_nosecret "
                     echo "-----------------------"
                     echo "$msg_nosecret with key '$msg_secret' on $(date +'%d/%m/%y')" >> commands.log
-                    $($msg_nosecret | tee -a commands.log)
+                    eval "$msg_nosecret | tee -a commands.log"
                     echo "---------------------" >> commands.log
                 fi
             

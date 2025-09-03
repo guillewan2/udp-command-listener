@@ -13,8 +13,35 @@ The configuration file looks like this:
 
 PORT=15000 # UDP listening port
 SECRET= # Secret key to authorize command execution
+....
 ```
 It is important to set a strong secret key to prevent unauthorized access to the command execution functionality, but it is not required. You can leave it empty if you don't need authentication.
+
+#### Whitelist and Blacklist
+The UDP Command Listener has a whitelist and a blacklist for controlling which commands are allowed or denied. For obvious reasons, you can't have both of them functioning at the same time.
+
+##### Whitelist
+The whitelist is a list of commands that are explicitly allowed to be executed. If a command is not on the whitelist, it will be denied. It looks like this
+```conf
+whitelisted_commands_ON=true # Enable whitelisted commands
+whitelisted_commands=( # Commands with spaces
+    ls -lah
+    shutdown -h now
+) 
+```
+
+The program checks if every word in the command is in the whitelist before allowing execution. You need to introduce the complete command on the whitelist.
+
+##### Blacklist
+The blacklist is a list of commands that are explicitly denied from being executed. If a command is on the blacklist, it will be denied regardless of the whitelist settings. It looks like this
+```conf
+banned_commands_ON=true # Enable banned commands
+banned_commands=( # Commands with spaces
+    shutdown
+    reboot
+    sl
+)
+```
 
 ## Usage
 To use the UDP Command Listener, follow these steps:
@@ -28,6 +55,6 @@ This is a WIP, please wait for the latest version for the installation instructi
 
 ## Examples of Use
 ### NFC Automatization
-You can use an NFC-enabled device to send commands to the UDP Command Listener. For example, you could configure your NFC tags to send specific commands when scanned, allowing for seamless automation of tasks. With an android device, you can use apps like Tasker or NFC Tools to create automations that trigger UDP packets to be sent to the listener.
+You can use an **NFC-enabled device** to send commands to the UDP Command Listener. For example, you could configure your NFC tags to send specific commands when scanned, allowing for *seamless automation* of tasks. With an android device, you can use apps like **Tasker** or **NFC Tools** to create automations that trigger UDP packets to be sent to the listener.
 
 
