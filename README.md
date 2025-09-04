@@ -51,10 +51,46 @@ To use the UDP Command Listener, follow these steps:
 3. Send UDP packets to the specified port with the commands you want to execute on the device.
 
 ## Installation
-This is a WIP, please wait for the latest version for the installation instructions.
+To install it, you need to run the installation script as root:
+
+```bash
+sudo ./install.sh
+```
+This will install the binaries to `/usr/local/bin/udp_command_listener/` and the configuration to `/etc/udp_command_listener/`. It will also create the systemd service and a shortcut in `/usr/bin/udp_receive`.
+
+### Systemd Service
+
+To start the service:
+```bash
+sudo systemctl start udp_command_listener.service
+```
+To enable the service at boot:
+```bash
+sudo systemctl enable udp_command_listener.service
+```
+To check the status:
+```bash
+sudo systemctl status udp_command_listener.service
+```
+
+### Shortcut
+
+You can run the listener manually from anywhere with:
+```bash
+udp_receive
+```
+
+### Edit Configuration
+
+To edit the configuration:
+```bash
+sudo udp_receive --config
+```
+This will open the `/etc/udp_command_listener/ucl.conf` file in the editor defined by the `PREFERRED_EDITOR` variable.
+
+<br><br>
+
 
 ## Examples of Use
 ### NFC Automatization
 You can use an **NFC-enabled device** to send commands to the UDP Command Listener. For example, you could configure your NFC tags to send specific commands when scanned, allowing for *seamless automation* of tasks. With an android device, you can use apps like **Tasker** or **NFC Tools** to create automations that trigger UDP packets to be sent to the listener.
-
-

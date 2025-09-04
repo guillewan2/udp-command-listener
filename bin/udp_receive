@@ -8,7 +8,7 @@
 
 
 # Import 'ucl.conf' variables and check for errors
-source ucl.conf
+source /etc/udp_command_listener/ucl.conf
 if [[ "$banned_commands_ON" == "$whitelisted_commands_ON" && "$whitelisted_commands_ON" == "true" ]]; then
     echo "You can't use the backlist and the whitelist at the same time!!!"
     exit 1
@@ -17,12 +17,15 @@ fi
 # Check if --prepare is selected
 if [[ $1 == "--prepare" ]]; then
     echo "Installing netcat..."
-    sudo apt install netcat -y
+    sudo apt install netcat-openbsd -y
+elif [[ $1 == "--config" ]]; then
+    echo "Asking for sudo to edit the configuration file.."
+    sudo $PREFERRED_EDITOR /etc/udp_command_listener/ucl.conf
+    sudo systemctl restart udp_command_listener.service
 fi
 
 
-
-#  Check if necat is installed 
+#  Check if netcat is installed 
 if ! command -v netcat >/dev/null 2>&1; then
     echo "netcat is not found, please install it with --prepare"
     exit 1
@@ -49,6 +52,7 @@ check_bannedcommand(){
                     echo "Banned command used, not executing"
                     return 1
                 fi
+                sleep 0.5
             done
         done
     elif [[ "$whitelisted_commands_ON" == "true" ]]; then
@@ -71,11 +75,10 @@ check_bannedcommand(){
 
 
 # N E T C A T 
+echo "Working on port $PORT..."
 while true; do
-    message=$(timeout 2 nc -u -l $PORT)
-        if [[ $message = "" ]]; then
-            echo "Nothing received"
-        else
+    message=$(timeout $TIMEOUT nc -u -l $PORT)
+        if [[ $message != "" ]]; then
             get_key $message
             # Check if msg_secret equals to the secret on ucl.conf
             if [[ "$msg_secret" = "$SECRET" ]]; then
@@ -89,7 +92,7 @@ while true; do
                     echo "- $msg_nosecret "
                     echo "-----------------------"
                     echo "$msg_nosecret with key '$msg_secret' on $(date +'%d/%m/%y')" >> commands.log
-                    eval "$msg_nosecret | tee -a commands.log"
+                    eval "$msg_nosecret | tee -a commands.log" &
                     echo "---------------------" >> commands.log
                 fi
             
