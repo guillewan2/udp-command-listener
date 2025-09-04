@@ -18,6 +18,8 @@ fi
 if [[ $1 == "--prepare" ]]; then
     echo "Installing netcat..."
     sudo apt install netcat-openbsd -y
+
+# Config needed?
 elif [[ $1 == "--config" ]]; then
     echo "Asking for sudo to edit the configuration file.."
     sudo $PREFERRED_EDITOR /etc/udp_command_listener/ucl.conf
@@ -30,6 +32,8 @@ if ! command -v netcat >/dev/null 2>&1; then
     echo "netcat is not found, please install it with --prepare"
     exit 1
 fi
+
+
 
 # Check secret key on message
 get_key(){
@@ -92,8 +96,8 @@ while true; do
                     echo "- $msg_nosecret "
                     echo "-----------------------"
                     echo "$msg_nosecret with key '$msg_secret' on $(date +'%d/%m/%y')" >> commands.log
-                    eval "$msg_nosecret | tee -a commands.log" &
-                    echo "---------------------" >> commands.log
+                    eval "$msg_nosecret | tee -a $logfile" &
+                    echo "---------------------" >> $logfile
                 fi
             
             fi
