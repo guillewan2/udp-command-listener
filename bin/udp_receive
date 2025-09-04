@@ -24,6 +24,7 @@ elif [[ $1 == "--config" ]]; then
     echo "Asking for sudo to edit the configuration file.."
     sudo $PREFERRED_EDITOR /etc/udp_command_listener/ucl.conf
     sudo systemctl restart udp_command_listener.service
+    exit 0
 fi
 
 
