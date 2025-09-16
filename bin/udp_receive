@@ -96,7 +96,7 @@ while true; do
                     echo "-----------------------"
                     echo "- $msg_nosecret "
                     echo "-----------------------"
-                    echo "$msg_nosecret with key '$msg_secret' on $(date +'%d/%m/%y')" >> commands.log
+                    echo "$msg_nosecret with key '$msg_secret' on $(date +'%d/%m/%y')" >> $logfile
                     eval "$msg_nosecret | tee -a $logfile" &
                     echo "---------------------" >> $logfile
                 fi
